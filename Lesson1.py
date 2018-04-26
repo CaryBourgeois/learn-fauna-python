@@ -44,7 +44,7 @@ def main(argv):
     # Call to check to see if database exists and to delete it id it does.
     #
     res = adminClient.query(
-        q.if_expr(q.exists(q.database(dbName)), q.delete(q.database(dbName)), True)
+        q.if_(q.exists(q.database(dbName)), q.delete(q.database(dbName)), True)
     )
     print('DB {0} deleted: {1}'.format(dbName, res))
 

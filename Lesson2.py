@@ -37,7 +37,7 @@ def main(argv):
     dbName = "LedgerExample"
 
     res = adminClient.query(
-        q.if_expr(
+        q.if_(
             q.exists(q.database(dbName)),
             [q.delete(q.database(dbName)), q.create_database({"name": dbName})],
             q.create_database({"name": dbName}))
@@ -70,7 +70,7 @@ def main(argv):
     res = client.query(
         q.create_index({
             "name": "customer_by_id",
-            "source": q.class_expr("customers"),
+            "source": q.class_("customers"),
             "unique": True,
             "terms": {"field": ["data", "id"]}
         })
@@ -83,7 +83,7 @@ def main(argv):
     custID = 0
     balance = 100.0
     res = client.query(
-        q.create(q.class_expr("customers"),  {"data": {"id": custID, "balance": balance}})
+        q.create(q.class_("customers"),  {"data": {"id": custID, "balance": balance}})
     )
     print('Create \'customer\' {0}: {1}'.format(custID, res))
 

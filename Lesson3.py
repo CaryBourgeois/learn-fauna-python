@@ -36,7 +36,7 @@ def main(argv):
     dbName = "LedgerExample"
 
     res = adminClient.query(
-        q.if_expr(
+        q.if_(
             q.exists(q.database(dbName)),
             [q.delete(q.database(dbName)), q.create_database({"name": dbName})],
             q.create_database({"name": dbName}))
@@ -71,25 +71,25 @@ def main(argv):
     res = client.query([
         q.create_index({
             "name": "customer_by_id",
-            "source": q.class_expr("customers"),
+            "source": q.class_("customers"),
             "unique": True,
             "terms": {"field": ["data", "id"]}
         }),
         q.create_index({
             "name": "customer_id_filter",
-            "source": q.class_expr("customers"),
+            "source": q.class_("customers"),
             "unique": True,
             "values": [{"field": ["data", "id"]}, {"field": ["ref"]}]
         })
     ])
-    print('Create \'customer_by_id\' index & \'customer_id_filter\': {0}'.format(res))
+    print('Create \'customer_by_id\' index & \'customer_id_filter\' index : {0}'.format(res))
 
     #
     # Create 20 customer records with ids from 1 to 20
     #
     client.query(
-        q.map_expr(
-            lambda id: q.create(q.class_expr("customers"),
+        q.map_(
+            lambda id: q.create(q.class_("customers"),
                                 {"data": {"id": id, "balance": q.multiply(id, 10)}}),
             list(range(1, 21)))
     )
@@ -109,7 +109,7 @@ def main(argv):
     # by id and return the actual data underlying them.
     #
     res = client.query(
-        q.map_expr(lambda x: q.select("data", q.get(x)),
+        q.map_(lambda x: q.select("data", q.get(x)),
                    q.paginate(
                        q.union(
                            q.match(q.index("customer_by_id"), 1),
@@ -126,10 +126,10 @@ def main(argv):
     #
     custIDs = [1, 3, 6, 7]
     res = client.query(
-        q.map_expr(lambda x: q.select("data", q.get(x)),
+        q.map_(lambda x: q.select("data", q.get(x)),
                    q.paginate(
                        q.union(
-                           q.map_expr(lambda y: q.match(q.index("customer_by_id"), y), custIDs)
+                           q.map_(lambda y: q.match(q.index("customer_by_id"), y), custIDs)
                        )
                    )
                    )
@@ -143,7 +143,7 @@ def main(argv):
     # 'before' to yield the expected results.
     #
     res = client.query(
-        q.map_expr(lambda x: q.select("data", q.get(q.select(1, x))),
+        q.map_(lambda x: q.select("data", q.get(q.select(1, x))),
                    q.paginate(q.match(q.index("customer_id_filter")), before=[5])
                    )
     )
@@ -153,8 +153,8 @@ def main(argv):
     # Extending the previous example to show getting a range between two values.
     #
     res = client.query(
-        q.map_expr(lambda x: q.select("data", q.get(q.select(1, x))),
-                   q.filter_expr(lambda y: q.lte(5, q.select(0, y)),
+        q.map_(lambda x: q.select("data", q.get(q.select(1, x))),
+                   q.filter_(lambda y: q.lte(5, q.select(0, y)),
                                  q.paginate(q.match(q.index("customer_id_filter")), before=[11])
                                  )
                    )
@@ -171,7 +171,7 @@ def main(argv):
     pageSize = 8
     while True:
         res = client.query(
-            q.map_expr(lambda x: q.select("data", q.get(q.select(1,x))),
+            q.map_(lambda x: q.select("data", q.get(q.select(1,x))),
                        q.paginate(q.match(q.index("customer_id_filter")), after=cursorPos, size=pageSize)
                        )
         )
