@@ -16,6 +16,10 @@
 #
 
 import sys
+
+ #
+ # These are the required imports for Fauna.
+ #
 from faunadb.client import FaunaClient
 from faunadb import query as q
 
@@ -24,11 +28,18 @@ def main(argv):
     #
     # Create an admin client. This is the client we will use to create the database.
     #
-    # If you are using the the FaunaDB-Cloud you will need to replace the value of the
-    # 'secret' in the command below with your "secret". As is, this should work with a
-    # local developer version of FaunaDB either the Jar file or Docker image based option
+    scheme = "http"
+    domain = "127.0.0.1"
+    port = "8443"
+    secret = "secret"
+    adminClient = FaunaClient(secret=secret, domain=domain, scheme=scheme, port=port)
+
     #
-    adminClient = FaunaClient(secret="secret", domain="127.0.0.1", scheme="http", port=8443)
+    # If you are using the the FaunaDB-Cloud use these lines to create the connection.
+    # Change the secret to your value and comment out the lines above
+    #
+    # secret = "Your Secret Goes here"
+    # adminClient = FaunaClient(secret=secret)
 
     dbName = "TestDB"
 
@@ -44,10 +55,12 @@ def main(argv):
     # Call to check to see if database exists and to delete it id it does.
     #
     res = adminClient.query(
-        q.if_(q.exists(q.database(dbName)), q.delete(q.database(dbName)), True)
+        q.if_(
+            q.exists(q.database(dbName)),
+            q.delete(q.database(dbName)),
+            True)
     )
     print('DB {0} deleted: {1}'.format(dbName, res))
-
 
 if __name__ == "__main__":
     main(sys.argv)
